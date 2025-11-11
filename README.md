@@ -57,44 +57,19 @@ Estas instruções permitirão obter uma cópia do projeto e executá-lo localme
 
 ### 🔧 Instalação  
 
-1. **Clone o repositório**:  
-   ```bash
-   git clone https://github.com/devLarissaRodrigues/Contar-IA.git
+### Build:
 
-2. **Acesse o diretório do projeto**:
+```bash
+docker build -t conversai-frontend .
+```
 
-   ```bash
-   cd Contar-IA
-   ```
+### Run:
 
-3. **Instale as dependências**:
-
-   ```bash
-   npm install
-   ```
-
-   ou
-
-   ```bash
-   yarn install
-   ```
-
-4. **Execute o servidor de desenvolvimento**:
-
-   ```bash
-   npm run dev
-   ```
-
-   ou
-
-   ```bash
-   yarn dev
-   ```
-
-5. **Abra o projeto no navegador**:
-   [http://localhost:3000](http://localhost:3000)
-
----
+```bash
+sudo docker run -p 3000:3000 \
+    -v "$(pwd)":/app \
+    conversai-frontend
+```
 
 ## 🧠 Tecnologias Principais
 
