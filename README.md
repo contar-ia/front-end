@@ -15,6 +15,33 @@ O frontend foi desenvolvido com **Next.js e TypeScript**, oferecendo uma experi�
 
 ---
 
+## 🖌️ UI Design & Frontend Developers
+
+<table>
+  <tr>
+    <td align="center" width="190px" height="160px">
+      <img src="https://avatars.githubusercontent.com/u/101843983?v=4" alt="Larissa Rodrigues" width="60"><br>
+      <a href="https://github.com/devLarissaRodrigues">@devLarissaRodrigues</a><br>
+      <b>Larissa Rodrigues</b><br>
+      <sub>UI Design • Frontend Developer</sub>
+    </td>
+    <td align="center" width="190px" height="160px">
+      <img src="https://avatars.githubusercontent.com/u/81045883?v=4" alt="Rafael Sobral" width="60"><br>
+      <a href="https://github.com/sobraldearruda">@sobraldearruda</a><br>
+      <b>Rafael Sobral</b><br>
+      <sub>UI Design • Frontend Developer</sub>
+  </td>
+    <td align="center" width="190px" height="160px">
+      <img src="https://avatars.githubusercontent.com/u/100167092?v=4" alt="Pedro Arthur" width="60"><br>
+      <a href="https://github.com/pedroarthurob">@pedroarthurob</a><br>
+      <b>Pedro Arthur</b><br>
+      <sub>UI Design • Frontend Developer</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## 🚀 Getting Started  
 
 Estas instruções permitirão obter uma cópia do projeto e executá-lo localmente para desenvolvimento e testes.  
@@ -33,7 +60,6 @@ Estas instruções permitirão obter uma cópia do projeto e executá-lo localme
 1. **Clone o repositório**:  
    ```bash
    git clone https://github.com/devLarissaRodrigues/Contar-IA.git
-````
 
 2. **Acesse o diretório do projeto**:
 
@@ -76,33 +102,6 @@ Estas instruções permitirão obter uma cópia do projeto e executá-lo localme
 * **TypeScript** — Tipagem estática para maior confiabilidade
 * **Google Gemini API** — Geração de texto e imagens com IA
 * **Figma** — Prototipação e design de interfaces
-
----
-
-## 🖌️ UI Design & Frontend Developers
-
-<table>
-  <tr>
-    <td align="center" width="190px" height="160px">
-      <img src="https://avatars.githubusercontent.com/u/101843983?v=4" alt="Larissa Rodrigues" width="60"><br>
-      <a href="https://github.com/devLarissaRodrigues">@devLarissaRodrigues</a><br>
-      <b>Larissa Rodrigues</b><br>
-      <sub>UI Design • Frontend Developer</sub>
-    </td>
-    <td align="center" width="190px" height="160px">
-      <img src="https://avatars.githubusercontent.com/u/152822744?v=4" alt="Rafael Sobral" width="60"><br>
-      <a href="https://github.com/sobraldearruda">@sobraldearruda</a><br>
-      <b>Rafael Sobral</b><br>
-      <sub>UI Design • Frontend Developer</sub>
-    </td>
-    <td align="center" width="190px" height="160px">
-      <img src="https://avatars.githubusercontent.com/u/159936045?v=4" alt="Pedro Arthur" width="60"><br>
-      <a href="https://github.com/pedroarthurob">@pedroarthurob</a><br>
-      <b>Pedro Arthur</b><br>
-      <sub>UI Design • Frontend Developer</sub>
-    </td>
-  </tr>
-</table>
 
 ---
 
