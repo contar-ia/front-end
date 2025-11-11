@@ -60,15 +60,15 @@ Estas instruções permitirão obter uma cópia do projeto e executá-lo localme
 ### Build:
 
 ```bash
-docker build -t conversai-frontend .
+docker build -t contaria-frontend .
 ```
 
 ### Run:
 
 ```bash
-sudo docker run -p 3000:3000 \
+docker run -p 3000:3000 \
     -v "$(pwd)":/app \
-    conversai-frontend
+    contaria-frontend
 ```
 
 ## 🧠 Tecnologias Principais
