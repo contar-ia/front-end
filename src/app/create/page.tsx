@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { ThemeSelector } from "@/components/create/ThemeSelector";
 import { StorySidebar } from "@/components/create/StorySidebar";
 import { StoryDetails } from "@/components/create/StoryDetails";
+import { useRouter } from "next/router";
 
 export default function CreateStory() {
   const [theme, setTheme] = useState("Aventura");
@@ -14,6 +15,13 @@ export default function CreateStory() {
   
   const [setting, setSetting] = useState(""); 
   const [characters, setCharacters] = useState(["Um cavaleiro corajoso", "Um esquilo falante"]);
+
+  const router = useRouter();
+
+  function handleCreateStory() {
+    const prompt = `Crie uma história com este cenário: ${setting}`;
+    router.push(`/story?prompt=${encodeURIComponent(prompt)}`);
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
@@ -90,10 +98,14 @@ export default function CreateStory() {
               
               <StorySidebar theme={theme} ageGroup={ageGroup} />
               
-              <button className="w-full bg-teal-400 hover:bg-teal-500 text-white text-lg font-bold py-4 rounded-full shadow-lg shadow-teal-100 transition-transform hover:scale-[1.01] flex items-center justify-center gap-2">
+              <button
+                onClick={handleCreateStory}
+                className="w-full bg-teal-400 hover:bg-teal-500 text-white text-lg font-bold py-4 rounded-full shadow-lg shadow-teal-100 transition-transform hover:scale-[1.01] flex items-center justify-center gap-2"
+              >
                 <Sparkles size={24} />
                 Criar a Minha História!
               </button>
+
 
             </div>
 
