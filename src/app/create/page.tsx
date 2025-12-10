@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { ThemeSelector } from "@/components/create/ThemeSelector";
 import { StorySidebar } from "@/components/create/StorySidebar";
 import { StoryDetails } from "@/components/create/StoryDetails";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function CreateStory() {
   const [theme, setTheme] = useState("Aventura");
@@ -18,9 +18,20 @@ export default function CreateStory() {
 
   const router = useRouter();
 
-  function handleCreateStory() {
-    const prompt = `Crie uma história com este cenário: ${setting}`;
-    router.push(`/story?prompt=${encodeURIComponent(prompt)}`);
+  async function handleCreateStory() {
+    const prompt = `
+  Crie uma história infantil com:
+
+  Tema: ${theme}
+  Faixa etária: ${ageGroup}
+  Valor educativo: ${value}
+  Cenário: ${setting}
+  Personagens: ${characters.join(", ")}
+  `;
+
+    sessionStorage.setItem("pending_prompt", prompt);
+
+    router.push("/story");
   }
 
   return (
