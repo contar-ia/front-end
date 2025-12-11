@@ -61,7 +61,7 @@
 
             <div className="lg:col-span-9">
               <StoryContent story={story} loading={loading} />
-              <ExportBar />
+              <ExportBar story={story}/>
             </div>
 
           </div>
