@@ -7,6 +7,7 @@ import { ThemeSelector } from "@/components/create/ThemeSelector";
 import { StorySidebar } from "@/components/create/StorySidebar";
 import { StoryDetails } from "@/components/create/StoryDetails";
 import { useRouter } from "next/navigation";
+import { useStory } from "@/contexts/StoryContext";
 
 export default function CreateStory() {
   const [theme, setTheme] = useState("Aventura");
@@ -16,20 +17,36 @@ export default function CreateStory() {
   const [setting, setSetting] = useState(""); 
   const [characters, setCharacters] = useState(["Um cavaleiro corajoso", "Um esquilo falante"]);
 
+  const { setStory } = useStory();
+
   const router = useRouter();
+
+  const getAgeLabel = (val: number) => {
+    if (val < 33) return "3-5 anos";
+    if (val < 66) return "6-8 anos";
+    return "9-12 anos";
+  };
 
   async function handleCreateStory() {
     const prompt = `
-  Crie uma história infantil com:
+    Crie uma história infantil com:
 
-  Tema: ${theme}
-  Faixa etária: ${ageGroup}
-  Valor educativo: ${value}
-  Cenário: ${setting}
-  Personagens: ${characters.join(", ")}
-  `;
+    Tema: ${theme}
+    Faixa etária: ${getAgeLabel(ageGroup)}
+    Valor educativo: ${value}
+    Cenário: ${setting}
+    Personagens: ${characters.join(", ")}
+    `;
 
     sessionStorage.setItem("pending_prompt", prompt);
+
+    setStory({
+      theme,
+      ageGroup,
+      value,
+      setting,
+      characters,
+    });
 
     router.push("/story");
   }
@@ -108,7 +125,13 @@ export default function CreateStory() {
             
             <div className="sticky top-24 space-y-6">
               
-              <StorySidebar theme={theme} ageGroup={ageGroup} characters={characters} setting={setting}/>
+              <StorySidebar 
+                theme={theme}
+                ageGroup={ageGroup}
+                value={value}
+                characters={characters}
+                setting={setting}
+              />
               
               <button
                 onClick={handleCreateStory}
