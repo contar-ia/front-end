@@ -100,6 +100,7 @@ export default function CreateStory() {
               characters={characters} 
               setting={setting} 
               onSettingChange={setSetting} 
+              onCharactersChange={setCharacters}
             />
           </div>
 
@@ -107,7 +108,7 @@ export default function CreateStory() {
             
             <div className="sticky top-24 space-y-6">
               
-              <StorySidebar theme={theme} ageGroup={ageGroup} />
+              <StorySidebar theme={theme} ageGroup={ageGroup} characters={characters} setting={setting}/>
               
               <button
                 onClick={handleCreateStory}
