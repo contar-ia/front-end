@@ -1,12 +1,28 @@
 import { X } from "lucide-react";
+import { useState } from "react";
 
 interface StoryDetailsProps {
   characters: string[];
   setting: string;
   onSettingChange: (value: string) => void;
+  onCharactersChange: (chars: string[]) => void;
 }
 
-export function StoryDetails({ characters, setting, onSettingChange }: StoryDetailsProps) {
+export function StoryDetails({ characters, setting, onSettingChange, onCharactersChange }: StoryDetailsProps) {
+  const [inputValue, setInputValue] = useState("");
+
+  function handleAddCharacter(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" && inputValue.trim() !== "") {
+      onCharactersChange([...characters, inputValue.trim()]);
+      setInputValue("");
+    }
+  }
+
+  function removeCharacter(index: number) {
+    const updated = characters.filter((_, i) => i !== index);
+    onCharactersChange(updated);
+  }
+  
   return (
     <section className="space-y-6">
       <div>
@@ -17,13 +33,16 @@ export function StoryDetails({ characters, setting, onSettingChange }: StoryDeta
           
           {characters.map((char, index) => (
             <span key={index} className="bg-teal-50 text-teal-700 px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-              {char} <X size={14} className="cursor-pointer hover:text-teal-900" />
+              {char} <X size={14} className="cursor-pointer hover:text-teal-900" onClick={() => removeCharacter(index)}/>
             </span>
           ))}
 
           <input
             type="text"
             placeholder="ex: Um robô curioso..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleAddCharacter}
             className="flex-grow outline-none bg-transparent text-slate-700 placeholder-slate-400 min-w-[150px]"
           />
         </div>

@@ -1,7 +1,27 @@
 import { Shield, User, MapPin, PlusCircle, Save } from "lucide-react";
 import Link from "next/link";
 
-export function StorySidebar() {
+interface StorySidebarProps {
+  theme: string;
+  ageGroup: number;
+  value: string;
+  characters: string[];
+  setting: string;
+}
+
+export function StorySidebar({theme, ageGroup, value, characters, setting}: StorySidebarProps) {
+  const getAgeLabel = (val: number) => {
+    if (val < 33) return "3-5 anos";
+    if (val < 66) return "6-8 anos";
+    return "9-12 anos";
+  };
+
+  const getThemeIcon = (t: string) => {
+    if (t === "Aventura") return "🏞️";
+    if (t === "Amizade") return "🦊";
+    return "🔍";
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-cyan-50 rounded-3xl p-6 border border-cyan-100 shadow-sm">
@@ -11,11 +31,11 @@ export function StorySidebar() {
   
           <div className="flex items-start gap-3">
             <div className="p-2 bg-white rounded-lg text-teal-600 shadow-sm">
-              <span className="text-xl">🏞️</span>
+              <span className="text-xl">{getThemeIcon(theme)}</span>
             </div>
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tema</p>
-              <p className="font-bold text-slate-800">Aventura</p>
+              <p className="font-bold text-slate-800">{theme}</p>
             </div>
           </div>
 
@@ -25,7 +45,7 @@ export function StorySidebar() {
             </div>
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Faixa Etária</p>
-              <p className="font-bold text-slate-800">6-8 anos</p>
+              <p className="font-bold text-slate-800">{getAgeLabel(ageGroup)}</p>
             </div>
           </div>
 
@@ -35,7 +55,7 @@ export function StorySidebar() {
             </div>
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Valor</p>
-              <p className="font-bold text-slate-800">Honestidade</p>
+              <p className="font-bold text-slate-800">{value}</p>
             </div>
           </div>
 
@@ -46,8 +66,18 @@ export function StorySidebar() {
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Personagens</p>
               <p className="font-bold text-slate-800 leading-tight">
-                Cavaleiro Corajoso,<br />Esquilo Falante
+                {characters.join(", ")}
               </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-white rounded-lg text-green-500 shadow-sm">
+              <span className="text-xl">🌍</span>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cenário</p>
+              <p className="font-bold text-slate-800">{setting}</p>
             </div>
           </div>
         </div>

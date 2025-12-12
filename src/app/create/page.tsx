@@ -6,6 +6,8 @@ import { AppHeader } from "@/components/AppHeader";
 import { ThemeSelector } from "@/components/create/ThemeSelector";
 import { StorySidebar } from "@/components/create/StorySidebar";
 import { StoryDetails } from "@/components/create/StoryDetails";
+import { useRouter } from "next/navigation";
+import { useStory } from "@/contexts/StoryContext";
 
 export default function CreateStory() {
   const [theme, setTheme] = useState("Aventura");
@@ -14,6 +16,40 @@ export default function CreateStory() {
   
   const [setting, setSetting] = useState(""); 
   const [characters, setCharacters] = useState(["Um cavaleiro corajoso", "Um esquilo falante"]);
+
+  const { setStory } = useStory();
+
+  const router = useRouter();
+
+  const getAgeLabel = (val: number) => {
+    if (val < 33) return "3-5 anos";
+    if (val < 66) return "6-8 anos";
+    return "9-12 anos";
+  };
+
+  async function handleCreateStory() {
+    const prompt = `
+    Crie uma história infantil com:
+
+    Tema: ${theme}
+    Faixa etária: ${getAgeLabel(ageGroup)}
+    Valor educativo: ${value}
+    Cenário: ${setting}
+    Personagens: ${characters.join(", ")}
+    `;
+
+    sessionStorage.setItem("pending_prompt", prompt);
+
+    setStory({
+      theme,
+      ageGroup,
+      value,
+      setting,
+      characters,
+    });
+
+    router.push("/story");
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
@@ -81,6 +117,7 @@ export default function CreateStory() {
               characters={characters} 
               setting={setting} 
               onSettingChange={setSetting} 
+              onCharactersChange={setCharacters}
             />
           </div>
 
@@ -88,12 +125,22 @@ export default function CreateStory() {
             
             <div className="sticky top-24 space-y-6">
               
-              <StorySidebar theme={theme} ageGroup={ageGroup} />
+              <StorySidebar 
+                theme={theme}
+                ageGroup={ageGroup}
+                value={value}
+                characters={characters}
+                setting={setting}
+              />
               
-              <button className="w-full bg-teal-400 hover:bg-teal-500 text-white text-lg font-bold py-4 rounded-full shadow-lg shadow-teal-100 transition-transform hover:scale-[1.01] flex items-center justify-center gap-2">
+              <button
+                onClick={handleCreateStory}
+                className="w-full bg-teal-400 hover:bg-teal-500 text-white text-lg font-bold py-4 rounded-full shadow-lg shadow-teal-100 transition-transform hover:scale-[1.01] flex items-center justify-center gap-2"
+              >
                 <Sparkles size={24} />
                 Criar a Minha História!
               </button>
+
 
             </div>
 
