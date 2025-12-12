@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar"; 
 import { Footer } from "@/components/Footer";
 import { Sparkles, Brain, Clock, Shield, Palette, BookOpen } from "lucide-react";
+import { Disclaimer } from "@/components/story/Disclaimer";
 
 export default function LearnMorePage() {
   return (
@@ -161,6 +162,7 @@ export default function LearnMorePage() {
               <Sparkles size={20} />
               Criar História Grátis
             </Link>
+            <Disclaimer />
           </div>
         </section>
 

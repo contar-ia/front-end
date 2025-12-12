@@ -6,6 +6,7 @@
   import { StoryContent } from "@/components/story/StoryContent";
   import { ExportBar } from "@/components/story/ExportBar";
   import { useStory } from "@/contexts/StoryContext";
+import { Disclaimer } from "@/components/story/Disclaimer";
 
   export default function StoryPage() {
   const { story: storyData } = useStory();
@@ -61,6 +62,7 @@
 
             <div className="lg:col-span-9">
               <StoryContent story={story} loading={loading} />
+              <Disclaimer />
               <ExportBar story={story}/>
             </div>
 
