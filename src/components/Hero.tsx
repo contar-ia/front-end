@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-// Remova o import do Footer daqui
 
 export function Hero() {
   return (
-    // Removi: min-h-screen, bg-gradient e o Footer
-    // Adicionei: w-full para garantir largura total
+    
     <section className="flex flex-col items-center justify-center text-center px-6 w-full py-10 md:py-0">
       <div className="max-w-4xl">
         

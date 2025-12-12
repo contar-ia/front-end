@@ -18,7 +18,7 @@ export default function LearnMorePage() {
         <section className="py-20 px-6 text-center bg-gradient-to-b from-white to-slate-50">
           <div className="max-w-4xl mx-auto">
             <span className="inline-block py-1 px-3 rounded-full bg-teal-100 text-teal-700 text-sm font-bold mb-6">
-              Para Educadores e Pais
+              Para Educadores e Crianças
             </span>
             <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">
               Transforme a Imaginação em <br />
@@ -63,7 +63,7 @@ export default function LearnMorePage() {
                 <div className="absolute top-0 right-0 bg-purple-400 text-white w-8 h-8 flex items-center justify-center rounded-bl-2xl rounded-tr-2xl font-bold">2</div>
                 <h3 className="text-xl font-bold text-slate-800 mb-3">Escolha os valores</h3>
                 <p className="text-slate-500">
-                  Selecione o que a história deve ensinar: Honestidade, Coragem, Amizade ou Trabalho em Equipa.
+                  Selecione o que a história deve ensinar: Honestidade, Coragem, Amizade ou Trabalho em Equipe.
                 </p>
               </div>
 
@@ -74,7 +74,7 @@ export default function LearnMorePage() {
                 <div className="absolute top-0 right-0 bg-yellow-400 text-white w-8 h-8 flex items-center justify-center rounded-bl-2xl rounded-tr-2xl font-bold">3</div>
                 <h3 className="text-xl font-bold text-slate-800 mb-3">Leia e compartilhe</h3>
                 <p className="text-slate-500">
-                  A IA gera o texto e uma imagem exclusiva. Você pode ler online, exportar como PDF ou imprimir!
+                  A IA gera o texto e uma imagem exclusiva. Você pode ler online, exportar como PDF/DOCX ou imprimir!
                 </p>
               </div>
             </div>

@@ -4,9 +4,7 @@ import { BookOpen, User, LogOut } from "lucide-react";
 export function AppHeader() {
   return (
     <header className="w-full bg-white border-b border-slate-100 py-3 px-6 flex items-center justify-between sticky top-0 z-50">
-      
-      {/* --- AQUI ESTA A CORREÇÃO --- */}
-      {/* O componente Link envolve o ícone e o texto */}
+
       <Link 
         href="/" 
         className="flex items-center gap-2 font-bold text-xl text-slate-800 hover:opacity-80 transition-opacity"
@@ -16,9 +14,7 @@ export function AppHeader() {
         </div>
         <span>Contar-IA</span>
       </Link>
-      {/* --------------------------- */}
 
-      {/* Lado Direito: Menu */}
       <div className="flex items-center gap-6">
         
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500">
