@@ -8,10 +8,10 @@
 </p>
 
 
-**Contar-IA** é uma aplicação web que utiliza **inteligência artificial** para **criar livros infantis personalizados**, com o objetivo de auxiliar professores na produção de **recursos lúdicos e pedagógicos**.  
+**Contar-IA** é uma aplicação web que utiliza **inteligência artificial** para **criar histórias infantis personalizadas**, com o objetivo de auxiliar professores na produção de **recursos lúdicos e pedagógicos**.  
 A aplicação combina **criatividade, tecnologia e educação**, permitindo que educadores e cuidadores gerem histórias ilustradas adaptadas a diferentes faixas etárias e temáticas de ensino.  
 
-O frontend foi desenvolvido com **Next.js e TypeScript**, oferecendo uma experiência interativa, acessível e dinâmica para a criação e visualização dos livros.  
+O frontend foi desenvolvido com **Next.js e TypeScript**, oferecendo uma experiência interativa, acessível e dinâmica para a criação e visualização de histórias.  
 
 ---
 
