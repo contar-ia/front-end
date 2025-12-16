@@ -10,6 +10,8 @@
     "setup-dev": "npm i && npm run dev"
   },
   "dependencies": {
+    "docx": "^9.5.1",
+    "file-saver": "^2.0.5",
     "html2pdf.js": "^0.12.1",
     "lucide-react": "^0.555.0",
     "marked": "^17.0.1",
@@ -19,6 +21,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
