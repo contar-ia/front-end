@@ -8,6 +8,7 @@ import { StorySidebar } from "@/components/create/StorySidebar";
 import { StoryDetails } from "@/components/create/StoryDetails";
 import { useRouter } from "next/navigation";
 import { useStory } from "@/contexts/StoryContext";
+import { StoryGenerationRequest } from "@/types/story";
 
 export default function CreateStory() {
   const [theme, setTheme] = useState("Aventura");
@@ -28,18 +29,19 @@ export default function CreateStory() {
   };
 
   async function handleCreateStory() {
-    const prompt = `
-    Crie uma história infantil com:
+    // Converter ageGroup (number) para string usando getAgeLabel
+    const ageGroupString = getAgeLabel(ageGroup);
 
-    Tema: ${theme}
-    Faixa etária: ${getAgeLabel(ageGroup)}
-    Valor educativo: ${value}
-    Cenário: ${setting}
-    Personagens: ${characters.join(", ")}
-    `;
+    // Criar objeto StoryGenerationRequest estruturado
+    const storyRequest: StoryGenerationRequest = {
+      theme,
+      age_group: ageGroupString,
+      educational_value: value,
+      setting,
+      characters,
+    };
 
-    sessionStorage.setItem("pending_prompt", prompt);
-
+    // Armazenar dados no context para uso na página de story
     setStory({
       theme,
       ageGroup,
