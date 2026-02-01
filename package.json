@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 0.0.0.0",
+    "dev": "cp ./.example.env ./.env && next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "setup-dev": "npm i && npm run dev"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
     "docx": "^9.5.1",
     "file-saver": "^2.0.5",
     "html2pdf.js": "^0.12.1",
