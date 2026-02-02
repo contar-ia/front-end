@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Edit3, Eye } from "lucide-react";
 
 export function StoryContent({ story, loading }: { story: string; loading: boolean }) {
   const [typedStory, setTypedStory] = useState("");
 
-  // Efeito de digitação
   useEffect(() => {
     if (!loading && story) {
       setTypedStory("");
