@@ -1,4 +1,4 @@
-import { Shield, User, MapPin, PlusCircle, Save } from "lucide-react";
+import { Shield, User, MapPin, PlusCircle, Save, Users, Heart, Edit3 } from "lucide-react";
 import Link from "next/link";
 
 interface StorySidebarProps {
@@ -19,7 +19,15 @@ export function StorySidebar({theme, ageGroup, value, characters, setting}: Stor
   const getThemeIcon = (t: string) => {
     if (t === "Aventura") return "🏞️";
     if (t === "Amizade") return "🦊";
-    return "🔍";
+    if (t === "Mistério") return "🔍";
+    return "✏️";
+  };
+
+  const getValueIcon = (t: string) => {
+    if (t === "Honestidade") return { icon: Shield, color: "text-yellow-500" };
+    if (t === "Trabalho em Equipe") return { icon: Users, color: "text-blue-500", };
+    if (t === "Bondade") return { icon: Heart, color: "text-pink-500" };
+    return { icon: Edit3, color: "text-slate-600" };
   };
 
   return (
@@ -51,7 +59,10 @@ export function StorySidebar({theme, ageGroup, value, characters, setting}: Stor
 
           <div className="flex items-start gap-3">
             <div className="p-2 bg-white rounded-lg text-yellow-500 shadow-sm">
-              <Shield size={20} />
+              {(() => {
+                const { icon: Icon, color } = getValueIcon(value);
+                return <Icon className={color} size={20} />;
+              })()}
             </div>
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Valor</p>
