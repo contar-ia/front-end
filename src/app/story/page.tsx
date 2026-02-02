@@ -7,39 +7,77 @@ import { StoryContent } from "@/components/story/StoryContent";
 import { ExportBar } from "@/components/story/ExportBar";
 import { useStory } from "@/contexts/StoryContext";
 import { Disclaimer } from "@/components/story/Disclaimer";
+import { StoryGenerationRequest, StoryGenerationResponse } from "@/types/story";
 
 export default function StoryPage() {
   const { story: storyData } = useStory();
 
   const [story, setStory] = useState("");
   const [loading, setLoading] = useState(true);
+  const [issues, setIssues] = useState<string[]>([]);
+
+  const getAgeLabel = (val: number) => {
+    if (val < 33) return "3-5 anos";
+    if (val < 66) return "6-8 anos";
+    return "9-12 anos";
+  };
 
   useEffect(() => {
     async function fetchStory() {
-      const prompt = sessionStorage.getItem("pending_prompt");
-
-      if (!prompt) {
-        setStory("Nenhum prompt encontrado.");
+      // Verificar se temos dados no context
+      if (!storyData.theme || !storyData.value) {
+        setStory("Dados da história não encontrados. Por favor, crie uma nova história.");
         setLoading(false);
         return;
       }
 
-      const res = await fetch("http://localhost:8000/llm/generate/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
+      // Construir StoryGenerationRequest a partir do context
+      const storyRequest: StoryGenerationRequest = {
+        theme: storyData.theme,
+        age_group: getAgeLabel(storyData.ageGroup),
+        educational_value: storyData.value,
+        setting: storyData.setting,
+        characters: storyData.characters,
+      };
 
-      const data = await res.json();
+      try {
+        const res = await fetch("http://localhost:8000/stories/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(storyRequest),
+        });
 
-      const text = data.answer || data.response || data.story || "";
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
-      setStory(text);
-      setLoading(false);
+        const data: StoryGenerationResponse = await res.json();
+
+        // Parsear StoryGenerationResponse
+        if (data.story_markdown) {
+          setStory(data.story_markdown);
+        } else {
+          setStory("Não foi possível gerar a história.");
+        }
+
+        // Exibir issues se houver
+        if (data.issues && data.issues.length > 0) {
+          setIssues(data.issues);
+          console.warn("Problemas encontrados:", data.issues);
+        } else {
+          setIssues([]);
+        }
+      } catch (error) {
+        console.error("Erro ao gerar história:", error);
+        setStory("Erro ao gerar a história. Por favor, tente novamente.");
+        setIssues([`Erro: ${error instanceof Error ? error.message : "Erro desconhecido"}`]);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchStory();
-  }, []);
+  }, [storyData]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">

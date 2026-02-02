@@ -8,6 +8,7 @@ import { StorySidebar } from "@/components/create/StorySidebar";
 import { StoryDetails } from "@/components/create/StoryDetails";
 import { useRouter } from "next/navigation";
 import { useStory } from "@/contexts/StoryContext";
+import { StoryGenerationRequest } from "@/types/story";
 
 export default function CreateStory() {
   const [theme, setTheme] = useState("Aventura");
@@ -51,6 +52,7 @@ export default function CreateStory() {
 
     sessionStorage.setItem("pending_prompt", prompt);
 
+    // Armazenar dados no context para uso na página de story
     setStory({
       theme: finalTheme,
       ageGroup,

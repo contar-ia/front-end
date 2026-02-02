@@ -2,99 +2,130 @@
 
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
-import { BookOpen, User, Lock, LogIn } from "lucide-react";
+import { User, Lock, LogIn, Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { useSession } from "@/contexts/SessionContext";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { updateSessionData } = useSession();
+
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: ""
+  });
+
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: loginData.email,
+          password: loginData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Falha ao entrar. Verifique suas credenciais.");
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+        console.log("DATA: ", data)
+      // Salva os dados no Contexto e LocalStorage
+      updateSessionData({
+        token: data.token,
+        user_id: data.user_id,
+        username: data.username,
+        email: data.email
+      });
+
+      router.push("/");
+    },
+  });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    mutate();
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 via-white to-pink-50 font-sans text-slate-800">
-      
-      <Header/>
+      <Header />
 
       <main className="flex-grow flex flex-col items-center justify-center p-4 w-full">
-        
         <div className="w-full max-w-md">
-          
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">
               Bem-vindo(a)!
             </h1>
-            <p className="text-slate-500">
-              Vamos continuar a aventura.
-            </p>
+            <p className="text-slate-500">Vamos continuar a aventura.</p>
           </div>
 
           <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl shadow-slate-200/50">
-            <form className="space-y-6">
-              
+            
+            {/* Alerta de Erro */}
+            {isError && (
+              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm font-medium rounded-r-lg animate-in fade-in zoom-in">
+                {(error as Error).message}
+              </div>
+            )}
+
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">
-                  E-mail
-                </label>
+                <label className="text-sm font-bold text-slate-700 ml-1">E-mail ou Usuário</label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
                     <User size={20} />
                   </div>
-                  <input 
-                    type="text" 
-                    placeholder="voce@exemplo.com"
+                  <input
+                    required
+                    type="text"
+                    placeholder="Seu usuário"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all placeholder:text-slate-400 text-slate-700"
+                    onChange={(e) => setLoginData((p) => ({ ...p, email: e.target.value }))}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">
-                  Senha
-                </label>
-                
+                <label className="text-sm font-bold text-slate-700 ml-1">Senha</label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
                     <Lock size={20} />
                   </div>
-                  <input 
-                    type="password" 
+                  <input
+                    required
+                    type="password"
                     placeholder="••••••••"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all placeholder:text-slate-400 text-slate-700"
+                    onChange={(e) => setLoginData((p) => ({ ...p, password: e.target.value }))}
                   />
                 </div>
-
-                <div className="text-right">
-                  <Link href="/forgot-password" className="text-sm font-bold text-teal-500 hover:text-teal-600 hover:underline">
-                    Esqueceu a senha?
-                  </Link>
-                </div>
               </div>
 
-              <button 
-                type="button" 
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg mt-2"
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-slate-300 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 transition-all active:scale-95 flex items-center justify-center gap-2 text-lg mt-2"
               >
-                <LogIn size={22} />
-                Entrar
+                {isPending ? (
+                  <Loader2 className="animate-spin" size={22} />
+                ) : (
+                  <>
+                    <LogIn size={22} />
+                    Entrar
+                  </>
+                )}
               </button>
             </form>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-slate-400 font-medium">Ou continue com</span>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-4">
-              <button className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:shadow-md transition-all">
-                <span className="text-xl">G</span> 
-              </button>
-              <button className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:shadow-md transition-all">
-                <span className="text-xl">📱</span>
-              </button>
-              <button className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:shadow-md transition-all">
-                <span className="text-xl">🍎</span>
-              </button>
-            </div>
 
             <div className="mt-8 text-center text-sm font-medium text-slate-500">
               Não tem uma conta?{" "}
@@ -103,11 +134,10 @@ export default function LoginPage() {
               </Link>
             </div>
           </div>
-
         </div>
       </main>
 
-      <Footer/>
+      <Footer />
     </div>
   );
 }
