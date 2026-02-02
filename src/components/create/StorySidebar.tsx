@@ -1,4 +1,4 @@
-import { Shield, User } from "lucide-react";
+import { Edit3, Heart, Shield, User, Users } from "lucide-react";
 
 interface StorySidebarProps {
   theme: string;
@@ -9,7 +9,7 @@ interface StorySidebarProps {
 }
 
 export function StorySidebar({ theme, ageGroup, value, characters, setting }: StorySidebarProps) {
-  
+
   const getAgeLabel = (val: number) => {
     if (val < 33) return "3-5 anos";
     if (val < 66) return "6-8 anos";
@@ -19,7 +19,15 @@ export function StorySidebar({ theme, ageGroup, value, characters, setting }: St
   const getThemeIcon = (t: string) => {
     if (t === "Aventura") return "🏞️";
     if (t === "Amizade") return "🦊";
-    return "🔍";
+    if (t === "Mistério") return "🔍";
+    return "✏️";
+  };
+
+  const getValueIcon = (t: string) => {
+    if (t === "Honestidade") return { icon: Shield, color: "text-yellow-500" };
+    if (t === "Trabalho em Equipe") return { icon: Users, color: "text-blue-500", };
+    if (t === "Bondade") return { icon: Heart, color: "text-pink-500" };
+    return { icon: Edit3, color: "text-slate-600" };
   };
 
   return (
@@ -30,10 +38,10 @@ export function StorySidebar({ theme, ageGroup, value, characters, setting }: St
         <div>
           <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Tema</p>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center text-xl">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-500 shadow-sm">
               {getThemeIcon(theme)}
             </div>
-            <span className="font-bold text-lg text-slate-800">{theme}</span>
+            <span className="font-semibold text-slate-700">{theme}</span>
           </div>
         </div>
 
@@ -51,7 +59,10 @@ export function StorySidebar({ theme, ageGroup, value, characters, setting }: St
           <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Valor</p>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-500 shadow-sm">
-              <Shield size={20} />
+              {(() => {
+                const { icon: Icon, color } = getValueIcon(value);
+                return <Icon className={color} size={20} />;
+              })()}
             </div>
             <span className="font-semibold text-slate-700">{value}</span>
           </div>
@@ -69,7 +80,7 @@ export function StorySidebar({ theme, ageGroup, value, characters, setting }: St
                   <div className="p-2 bg-white rounded-full text-red-400 shadow-sm">
                     <User size={16} />
                   </div>
-                  <span className="text-slate-700 font-medium">{char}</span>
+                  <span className="font-semibold text-slate-700">{char}</span>
                 </li>
               ))}
             </ul>
@@ -82,7 +93,7 @@ export function StorySidebar({ theme, ageGroup, value, characters, setting }: St
           {setting.trim() === "" ? (
             <p className="text-slate-400 italic text-sm">À espera do seu lugar mágico...</p>
           ) : (
-            <p className="text-slate-700 font-medium">{setting}</p>
+            <p className="font-semibold text-slate-700">{setting}</p>
           )}
         </div>
       </div>
