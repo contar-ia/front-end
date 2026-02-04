@@ -99,7 +99,19 @@ export function StorySidebar({theme, ageGroup, value, characters, setting}: Stor
         Salvar na Biblioteca
       </button>
 
-      <Link href="/create" className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-transform active:scale-95">
+      <Link 
+        href="/create" 
+        onClick={(e) => {
+          // Sinalizar para cancelar requisição em andamento
+          sessionStorage.setItem("cancel_story_request", "true");
+          // Pequeno delay para garantir que o sinal seja processado
+          e.preventDefault();
+          setTimeout(() => {
+            window.location.href = "/create";
+          }, 100);
+        }}
+        className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-transform active:scale-95"
+      >
         <PlusCircle size={20} />
         Criar Nova História
       </Link>

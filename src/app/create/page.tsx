@@ -51,6 +51,9 @@ export default function CreateStory() {
     `;
 
     sessionStorage.setItem("pending_prompt", prompt);
+    
+    // Sinalizar que uma nova história está sendo criada (para cancelar requisições em andamento)
+    sessionStorage.setItem("cancel_story_request", "true");
 
     // Armazenar dados no context para uso na página de story
     setStory({
