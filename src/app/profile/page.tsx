@@ -1,14 +1,49 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { User, Mail, BookOpen, Star, Settings, Camera, Save, Lock } from "lucide-react";
+import { useSession } from "@/contexts/SessionContext";
+import { StoryStatsResponse } from "@/types/story";
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const { data: session, isLoading } = useSession();
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+  const [stats, setStats] = useState<StoryStatsResponse>({
+    created_count: 0,
+    reads_count: 0,
+    saved_count: 0,
+  });
+  useEffect(() => {
+    if (!isLoading && !session?.token) {
+      router.push("/login");
+    }
+  }, [isLoading, session?.token, router]);
 
-  const [name, setName] = useState("Maria Silva");
-  const [email, setEmail] = useState("maria.professora@escola.com");
-  const [school, setSchool] = useState("Escola Municipal do Saber");
+  useEffect(() => {
+  if (!session?.user_id) return;
+
+  fetch(`${backendUrl}/stories/stats/${session.user_id}`)
+    .then(async (res) => {
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || `HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => setStats(data))
+    .catch(() => setStats({ created_count: 0, reads_count: 0, saved_count: 0 }));
+}, [backendUrl, session?.user_id]);
+  const [name, setName] = useState(session?.username ?? "");
+  const [email, setEmail] = useState(session?.email ?? "");
+  const [school, setSchool] = useState("");
+
+  useEffect(() => {
+    if (session?.username) setName(session.username);
+    if (session?.email) setEmail(session.email);
+  }, [session?.username, session?.email]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
@@ -48,7 +83,7 @@ export default function ProfilePage() {
               </div>
 
               <h2 className="text-xl font-bold text-slate-800">{name}</h2>
-              <p className="text-sm text-slate-500 font-medium mb-4">Educadora • Plano Pro</p>
+               <p className="text-sm text-slate-500 font-medium mb-4">Educadora • Plano Pro</p>
 
 
               <div className="flex gap-2 mb-6">
@@ -85,7 +120,7 @@ export default function ProfilePage() {
                   <BookOpen size={24} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-800">12</p>
+                  <p className="text-2xl font-bold text-slate-800">{stats.created_count}</p>
                   <p className="text-xs text-slate-500 font-bold uppercase">Histórias</p>
                 </div>
               </div>
@@ -95,7 +130,7 @@ export default function ProfilePage() {
                   <Star size={24} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-800">345</p>
+                  <p className="text-2xl font-bold text-slate-800">{stats.reads_count}</p>
                   <p className="text-xs text-slate-500 font-bold uppercase">Leituras</p>
                 </div>
               </div>
@@ -105,7 +140,7 @@ export default function ProfilePage() {
                   <Save size={24} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-800">8</p>
+                  <p className="text-2xl font-bold text-slate-800">{stats.saved_count}</p>
                   <p className="text-xs text-slate-500 font-bold uppercase">Salvas</p>
                 </div>
               </div>

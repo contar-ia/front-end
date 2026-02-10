@@ -10,6 +10,8 @@ import { useMutation } from "@tanstack/react-query";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+  const requestTimeoutMs = 10000;
   
   const [userData, setUserData] = useState({
     username: "",
@@ -24,22 +26,35 @@ export default function RegisterPage() {
         throw new Error("As senhas não coincidem.");
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: userData.username,
-          email: userData.email,
-          password: userData.password,
-        }),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || "Erro no cadastro");
-      return data;
+      try {
+        const response = await fetch(`${backendUrl}/auth/register/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: userData.username,
+            email: userData.email,
+            password: userData.password,
+          }),
+          signal: controller.signal,
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "Erro no cadastro");
+        return data;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          throw new Error("Servidor demorou para responder. Tente novamente.");
+        }
+        throw err;
+      } finally {
+        clearTimeout(timeoutId);
+      }
     },
     onSuccess: () => {
-      router.push("/login");
+      router.push("/create");
     },
   });
 

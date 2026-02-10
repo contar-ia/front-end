@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Shield, Users, Heart, Sparkles, Edit3 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { ThemeSelector } from "@/components/create/ThemeSelector";
@@ -9,6 +9,7 @@ import { StoryDetails } from "@/components/create/StoryDetails";
 import { useRouter } from "next/navigation";
 import { useStory } from "@/contexts/StoryContext";
 import { StoryGenerationRequest } from "@/types/story";
+import { useSession } from "@/contexts/SessionContext";
 
 export default function CreateStory() {
   const [theme, setTheme] = useState("Aventura");
@@ -29,6 +30,13 @@ export default function CreateStory() {
 
   const { setStory } = useStory();
   const router = useRouter();
+  const { data: session, isLoading } = useSession();
+
+  useEffect(() => {
+    if (!isLoading && !session?.token) {
+      router.push("/login");
+    }
+  }, [isLoading, session?.token, router]);
 
   const getAgeLabel = (val: number) => {
     if (val < 33) return "3-5 anos";

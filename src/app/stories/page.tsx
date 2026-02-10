@@ -1,55 +1,58 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
+import { useSession } from "@/contexts/SessionContext";
 import { Search, Plus, Calendar, Edit3, Trash2, Eye, MoreVertical } from "lucide-react";
+import { StoryListItem } from "@/types/story";
 
-const MOCK_STORIES = [
-  {
-    id: 1,
-    title: "O Cavaleiro e a Bolota",
-    theme: "Aventura",
-    themeColor: "bg-blue-100 text-blue-700",
-    date: "29 Nov, 2024",
-    image: "🏰",
-    bgGradient: "from-blue-200 to-slate-200"
-  },
-  {
-    id: 2,
-    title: "A Raposa que Sabia Voar",
-    theme: "Amizade",
-    themeColor: "bg-orange-100 text-orange-700",
-    date: "15 Out, 2024",
-    image: "🦊",
-    bgGradient: "from-orange-200 to-yellow-100"
-  },
-  {
-    id: 3,
-    title: "O Mistério do Relógio Parado",
-    theme: "Mistério",
-    themeColor: "bg-purple-100 text-purple-700",
-    date: "02 Set, 2024",
-    image: "🕰️",
-    bgGradient: "from-purple-200 to-slate-200"
-  },
-  {
-    id: 4,
-    title: "Viagem ao Planeta Doce",
-    theme: "Fantasia",
-    themeColor: "bg-pink-100 text-pink-700",
-    date: "20 Ago, 2024",
-    image: "🍭",
-    bgGradient: "from-pink-200 to-rose-100"
-  },
+const STORY_CARD_COLORS = [
+  { themeColor: "bg-blue-100 text-blue-700", bgGradient: "from-blue-200 to-slate-200" },
+  { themeColor: "bg-orange-100 text-orange-700", bgGradient: "from-orange-200 to-yellow-100" },
+  { themeColor: "bg-purple-100 text-purple-700", bgGradient: "from-purple-200 to-slate-200" },
+  { themeColor: "bg-pink-100 text-pink-700", bgGradient: "from-pink-200 to-rose-100" },
 ];
 
 export default function StoriesPage() {
+  const router = useRouter();
+  const { data: session, isLoading } = useSession();
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
   const [searchTerm, setSearchTerm] = useState("");
+  const [stories, setStories] = useState<StoryListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredStories = MOCK_STORIES.filter(story => 
-    story.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    if (!isLoading && !session?.token) {
+      router.push("/login");
+    }
+  }, [isLoading, session?.token, router]);
+
+  useEffect(() => {
+    if (!session?.user_id) return;
+
+    setLoading(true);
+    setError(null);
+
+    fetch(`${backendUrl}/stories/saved/${session.user_id}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || `HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => setStories(data || []))
+      .catch((err) => setError(err.message || "Erro ao carregar histórias."))
+      .finally(() => setLoading(false));
+  }, [backendUrl, session?.user_id]);
+
+  const filteredStories = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return stories.filter((story) => story.title.toLowerCase().includes(term));
+  }, [stories, searchTerm]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
@@ -92,68 +95,77 @@ export default function StoriesPage() {
         </div>
 
 
-        {filteredStories.length > 0 ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="bg-slate-100 p-6 rounded-full mb-4">
+              <Search size={48} className="text-slate-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-700">Carregando histórias...</h3>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="bg-red-50 p-6 rounded-full mb-4">
+              <Search size={48} className="text-red-300" />
+            </div>
+            <h3 className="text-xl font-bold text-red-700">Erro ao carregar</h3>
+            <p className="text-slate-500">{error}</p>
+          </div>
+        ) : filteredStories.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             
-            {filteredStories.map((story) => (
-              <div key={story.id} className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 flex flex-col overflow-hidden">
-                
+            {filteredStories.map((story, index) => {
+  const palette = STORY_CARD_COLORS[index % STORY_CARD_COLORS.length];
+  const createdAt = new Date(story.created_at);
+  const dateLabel = isNaN(createdAt.getTime())
+    ? "Data desconhecida"
+    : createdAt.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 
-                <div className={`h-40 w-full bg-gradient-to-br ${story.bgGradient} relative flex items-center justify-center`}>
-                  <span className="text-6xl drop-shadow-sm transform group-hover:scale-110 transition-transform duration-300">
-                    {story.image}
-                  </span>
+  return (
+    <div key={story.id} className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 flex flex-col overflow-hidden">
+      <div className={`h-40 w-full bg-gradient-to-br ${palette.bgGradient} relative flex items-center justify-center`}>
+        <span className="text-6xl drop-shadow-sm transform group-hover:scale-110 transition-transform duration-300">
+          Livro
+        </span>
+      </div>
 
-                  <span className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold shadow-sm ${story.themeColor}`}>
-                    {story.theme}
-                  </span>
-                </div>
+      <div className="p-5 flex-grow flex flex-col">
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex items-center gap-1 text-xs text-slate-400 font-medium">
+            <Calendar size={12} />
+            {dateLabel}
+          </div>
+          <button className="text-slate-300 hover:text-slate-600 transition-colors">
+            <MoreVertical size={16} />
+          </button>
+        </div>
 
-                <div className="p-5 flex-grow flex flex-col">
-                  
-   
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-1 text-xs text-slate-400 font-medium">
-                      <Calendar size={12} />
-                      {story.date}
-                    </div>
-                    <button className="text-slate-300 hover:text-slate-600 transition-colors">
-                      <MoreVertical size={16} />
-                    </button>
-                  </div>
+        <h3 className="text-lg font-bold text-slate-800 mb-2 line-clamp-2 leading-tight group-hover:text-teal-600 transition-colors">
+          {story.title}
+        </h3>
 
-    
-                  <h3 className="text-lg font-bold text-slate-800 mb-2 line-clamp-2 leading-tight group-hover:text-teal-600 transition-colors">
-                    {story.title}
-                  </h3>
+        <p className="text-sm text-slate-500 line-clamp-3 mb-6">
+          {story.contents?.slice(0, 160) || "Histórias sem conteúdo."}
+        </p>
 
- 
-                  <p className="text-sm text-slate-500 line-clamp-3 mb-6">
-                    Era uma vez, num reino muito distante, uma aventura incrível que mudou tudo para sempre...
-                  </p>
+        <div className="mt-auto flex items-center gap-2 pt-4 border-t border-slate-50">
+          <Link 
+            href={`/story?id=${story.id}`} 
+            className="flex-grow bg-slate-50 hover:bg-teal-50 text-slate-600 hover:text-teal-600 border border-slate-200 hover:border-teal-200 rounded-lg py-2 flex items-center justify-center gap-2 text-sm font-bold transition-all"
+          >
+            <Eye size={16} /> Ler
+          </Link>
 
-    
-                  <div className="mt-auto flex items-center gap-2 pt-4 border-t border-slate-50">
-      
-                    <Link 
-                      href="/story" 
-                      className="flex-grow bg-slate-50 hover:bg-teal-50 text-slate-600 hover:text-teal-600 border border-slate-200 hover:border-teal-200 rounded-lg py-2 flex items-center justify-center gap-2 text-sm font-bold transition-all"
-                    >
-                      <Eye size={16} /> Ler
-                    </Link>
-
-
-                    <button className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
-                      <Edit3 size={18} />
-                    </button>
-                    <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Excluir">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-            ))}
+          <button className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+            <Edit3 size={18} />
+          </button>
+          <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Excluir">
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+})}
 
           </div>
         ) : (

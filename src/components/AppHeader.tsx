@@ -1,7 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { BookOpen, User, LogOut } from "lucide-react";
+import { useSession } from "@/contexts/SessionContext";
+import { useRouter } from "next/navigation";
 
 export function AppHeader() {
+  const router = useRouter();
+  const { data: session, logOut } = useSession();
+  const displayName = session?.username || "Professor(a)";
+
+  function handleLogout() {
+    logOut();
+    router.push("/");
+  }
+
   return (
     <header className="w-full bg-white border-b border-slate-100 py-3 px-6 flex items-center justify-between sticky top-0 z-50">
 
@@ -30,10 +43,14 @@ export function AppHeader() {
 
         <div className="flex items-center gap-3 pl-2">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-slate-700 leading-none">Olá, Professor(a)</p>
-            <Link href="/login" className="text-xs text-slate-400 hover:text-red-400 flex items-center justify-end gap-1 mt-1">
+            <p className="text-sm font-bold text-slate-700 leading-none">Olá, {displayName}</p>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-xs text-slate-400 hover:text-red-400 flex items-center justify-end gap-1 mt-1"
+            >
               Sair <LogOut size={10} />
-            </Link>
+            </button>
           </div>
 
           <Link href="/profile">

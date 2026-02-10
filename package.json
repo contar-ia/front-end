@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cp ./.example.env ./.env && next dev -H 0.0.0.0",
+    "dev": "powershell -Command \"Copy-Item ./.example.env ./.env -Force\" && next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -32,3 +32,4 @@
     "typescript": "^5"
   }
 }
+
