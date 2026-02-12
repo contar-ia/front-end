@@ -1,5 +1,5 @@
-"use client";
-import { createContext, ReactNode, useContext, useEffect } from "react";
+﻿"use client";
+import { createContext, ReactNode, useCallback, useContext, useEffect } from "react";
 import { UseQueryResult, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const APP_NAME = "contaria_app";
@@ -10,12 +10,15 @@ export interface SessionData {
   user_id: string;
   username: string;
   email: string;
+  institution?: string | null;
+  bio?: string | null;
 }
 
 type SessionContextType = UseQueryResult<SessionData | null, Error> & {
   logOut: () => void;
   logOutWithReason: (reason: string) => void;
   updateSessionData: (novaSession: Partial<SessionData>) => void;
+  replaceSessionData: (novaSession: SessionData) => void;
 };
 
 export async function getStorageData(key: string = APP_NAME): Promise<SessionData | null> {
@@ -62,42 +65,58 @@ export function SessionContextProvider({ children }: Props) {
     queryFn: () => getStorageData(),
   });
 
-  function logOut() {
+  const logOut = useCallback(() => {
     clearStorageData();
     clearLogoutReason();
+    queryClient.setQueryData(["sessions"], null);
     queryClient.invalidateQueries({ queryKey: ["sessions"] });
-  }
+  }, [queryClient]);
 
-  function logOutWithReason(reason: string) {
+  const logOutWithReason = useCallback((reason: string) => {
     setLogoutReason(reason);
     clearStorageData();
+    queryClient.setQueryData(["sessions"], null);
     queryClient.invalidateQueries({ queryKey: ["sessions"] });
-  }
+  }, [queryClient]);
 
-  function updateSessionData(novaSession: Partial<SessionData>) {
+  const updateSessionData = useCallback((novaSession: Partial<SessionData>) => {
     const defaultSession: SessionData = {
       token: "",
       user_id: "",
       username: "",
       email: "",
+      institution: null,
+      bio: null,
     };
 
+    const currentSession = queryClient.getQueryData<SessionData | null>(["sessions"]);
+
     const updatedData: SessionData = {
-      ...(session.data ?? defaultSession),
+      ...(currentSession ?? defaultSession),
       ...novaSession,
     };
 
     setStorageData(updatedData);
+    queryClient.setQueryData(["sessions"], updatedData);
     queryClient.invalidateQueries({ queryKey: ["sessions"] });
-  }
+  }, [queryClient]);
+
+  const replaceSessionData = useCallback((novaSession: SessionData) => {
+    setStorageData(novaSession);
+    queryClient.setQueryData(["sessions"], novaSession);
+    queryClient.invalidateQueries({ queryKey: ["sessions"] });
+  }, [queryClient]);
 
   useEffect(() => {
-    if (!session.data?.token) return;
+    const token = session.data?.token;
+    if (!token) return;
+    const controller = new AbortController();
 
     fetch(`${backendUrl}/auth/me`, {
       headers: {
-        Authorization: `Bearer ${session.data.token}`,
+        Authorization: `Bearer ${token}`,
       },
+      signal: controller.signal,
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -110,11 +129,17 @@ export function SessionContextProvider({ children }: Props) {
           user_id: data.user_id,
           username: data.username,
           email: data.email,
+          institution: data.institution ?? null,
+          bio: data.bio ?? null,
         });
       })
-      .catch(() => {
-        logOutWithReason("Sessão expirada. Faça login novamente.");
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        logOutWithReason("Sessao expirada. Faca login novamente.");
       });
+    return () => {
+      controller.abort();
+    };
   }, [backendUrl, session.data?.token, updateSessionData, logOutWithReason]);
 
   return (
@@ -124,6 +149,7 @@ export function SessionContextProvider({ children }: Props) {
         logOut,
         logOutWithReason,
         updateSessionData,
+        replaceSessionData,
       }}
     >
       {children}

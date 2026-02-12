@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
+import { clearLogoutReason } from "@/contexts/SessionContext";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -54,7 +55,8 @@ export default function RegisterPage() {
       }
     },
     onSuccess: () => {
-      router.push("/create");
+      clearLogoutReason();
+      router.push("/login");
     },
   });
 

@@ -4,17 +4,22 @@ import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { User, Lock, LogIn, Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { useSession, getLogoutReason, clearLogoutReason } from "@/contexts/SessionContext";
+import {
+  useSession,
+  getLogoutReason,
+  clearLogoutReason,
+} from "@/contexts/SessionContext";
 
 export default function LoginPage() {
   const router = useRouter();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
   const requestTimeoutMs = 10000;
-  const { updateSessionData } = useSession();
+  const { replaceSessionData, logOut } = useSession();
   const [logoutReason, setLogoutReason] = useState<string | null>(null);
+  const didResetSession = useRef(false);
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -54,13 +59,13 @@ export default function LoginPage() {
       }
     },
     onSuccess: (data) => {
-        console.log("DATA: ", data)
-      // Salva os dados no Contexto e LocalStorage
-      updateSessionData({
+      replaceSessionData({
         token: data.token,
         user_id: data.user_id,
         username: data.username,
-        email: data.email
+        email: data.email,
+        institution: data.institution ?? null,
+        bio: data.bio ?? null,
       });
 
       router.push("/create");
@@ -73,13 +78,17 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
+    if (didResetSession.current) return;
+    didResetSession.current = true;
+
     getLogoutReason().then((reason) => {
+      logOut();
       if (reason) {
         setLogoutReason(reason);
         clearLogoutReason();
       }
     });
-  }, []);
+  }, [logOut]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 via-white to-pink-50 font-sans text-slate-800">
@@ -171,4 +180,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
