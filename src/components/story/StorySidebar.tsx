@@ -7,9 +7,13 @@ interface StorySidebarProps {
   value: string;
   characters: string[];
   setting: string;
+  onSave?: () => void;
+  canSave?: boolean;
+  isSaving?: boolean;
+  isSaved?: boolean;
 }
 
-export function StorySidebar({theme, ageGroup, value, characters, setting}: StorySidebarProps) {
+export function StorySidebar({theme, ageGroup, value, characters, setting, onSave, canSave = false, isSaving = false, isSaved = false}: StorySidebarProps) {
   const getAgeLabel = (val: number) => {
     if (val < 33) return "3-5 anos";
     if (val < 66) return "6-8 anos";
@@ -49,10 +53,10 @@ export function StorySidebar({theme, ageGroup, value, characters, setting}: Stor
 
           <div className="flex items-start gap-3">
             <div className="p-2 bg-white rounded-lg text-teal-600 shadow-sm">
-              <span className="text-xl">😊</span>
+               <span className="text-xl">😊</span>
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Faixa Etária</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Faixa Etf¡ria</p>
               <p className="font-bold text-slate-800">{getAgeLabel(ageGroup)}</p>
             </div>
           </div>
@@ -84,7 +88,7 @@ export function StorySidebar({theme, ageGroup, value, characters, setting}: Stor
 
           <div className="flex items-start gap-3">
             <div className="p-2 bg-white rounded-lg text-green-500 shadow-sm">
-              <span className="text-xl">🌍</span>
+               <span className="text-xl">🌍</span>
             </div>
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cenário</p>
@@ -94,9 +98,14 @@ export function StorySidebar({theme, ageGroup, value, characters, setting}: Stor
         </div>
       </div>
 
-      <button className="w-full bg-teal-400 hover:bg-teal-500 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-teal-100 flex items-center justify-center gap-2 transition-transform active:scale-95">
+      <button
+        type="button"
+        disabled={!canSave || isSaving || isSaved}
+        onClick={onSave}
+        className="w-full bg-teal-400 hover:bg-teal-500 disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-teal-100 flex items-center justify-center gap-2 transition-transform active:scale-95"
+      >
         <Save size={20} />
-        Salvar na Biblioteca
+        {isSaved ? "Salvo" : isSaving ? "Salvando..." : "Salvar na Biblioteca"}
       </button>
 
       <Link 
