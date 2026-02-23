@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "powershell -Command \"Copy-Item ./.example.env ./.env -Force\" && next dev -H 0.0.0.0",
+    "dev": "node -e \"require('fs').copyFileSync('.example.env', '.env')\" && next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
