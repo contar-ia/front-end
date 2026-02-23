@@ -1,9 +1,11 @@
+import React from 'react';
+
 interface ThemeSelectorProps {
   selectedTheme: string;
   onSelect: (theme: string) => void;
 }
 
-export function ThemeSelector({ selectedTheme, onSelect }: ThemeSelectorProps) {
+export function ThemeSelector({ selectedTheme, onSelect }: ThemeSelectorProps): React.ReactNode {
   const themes = [
     { id: "Aventura", color: "bg-green-100", icon: "🏞️", border: "border-teal-400" },
     { id: "Amizade", color: "bg-orange-100", icon: "🦊", border: "border-teal-400" },

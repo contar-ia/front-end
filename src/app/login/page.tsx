@@ -4,14 +4,22 @@ import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { User, Lock, LogIn, Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { useSession } from "@/contexts/SessionContext";
+import {
+  useSession,
+  getLogoutReason,
+  clearLogoutReason,
+} from "@/contexts/SessionContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { updateSessionData } = useSession();
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+  const requestTimeoutMs = 10000;
+  const { replaceSessionData, logOut } = useSession();
+  const [logoutReason, setLogoutReason] = useState<string | null>(null);
+  const didResetSession = useRef(false);
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -20,34 +28,47 @@ export default function LoginPage() {
 
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: loginData.email,
-          password: loginData.password,
-        }),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
 
-      const data = await response.json();
+      try {
+        const response = await fetch(`${backendUrl}/auth/login/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: loginData.email,
+            password: loginData.password,
+          }),
+          signal: controller.signal,
+        });
 
-      if (!response.ok) {
-        throw new Error(data.detail || "Falha ao entrar. Verifique suas credenciais.");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "Falha ao entrar. Verifique suas credenciais.");
+        }
+
+        return data;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          throw new Error("Servidor demorou para responder. Tente novamente.");
+        }
+        throw err;
+      } finally {
+        clearTimeout(timeoutId);
       }
-
-      return data;
     },
     onSuccess: (data) => {
-        console.log("DATA: ", data)
-      // Salva os dados no Contexto e LocalStorage
-      updateSessionData({
+      replaceSessionData({
         token: data.token,
         user_id: data.user_id,
         username: data.username,
-        email: data.email
+        email: data.email,
+        institution: data.institution ?? null,
+        bio: data.bio ?? null,
       });
 
-      router.push("/");
+      router.push("/create");
     },
   });
 
@@ -55,6 +76,19 @@ export default function LoginPage() {
     e.preventDefault();
     mutate();
   };
+
+  useEffect(() => {
+    if (didResetSession.current) return;
+    didResetSession.current = true;
+
+    getLogoutReason().then((reason) => {
+      logOut();
+      if (reason) {
+        setLogoutReason(reason);
+        clearLogoutReason();
+      }
+    });
+  }, [logOut]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 via-white to-pink-50 font-sans text-slate-800">
@@ -70,6 +104,11 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl shadow-slate-200/50">
+            {logoutReason && (
+              <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 text-blue-700 text-sm font-medium rounded-r-lg">
+                {logoutReason}
+              </div>
+            )}
             
             {/* Alerta de Erro */}
             {isError && (
@@ -104,7 +143,7 @@ export default function LoginPage() {
                   <input
                     required
                     type="password"
-                    placeholder="••••••••"
+                     placeholder="••••••••"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all placeholder:text-slate-400 text-slate-700"
                     onChange={(e) => setLoginData((p) => ({ ...p, password: e.target.value }))}
                   />

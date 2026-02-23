@@ -6,14 +6,19 @@ import { StorySidebar } from "@/components/story/StorySidebar";
 import { StoryContent } from "@/components/story/StoryContent";
 import { ExportBar } from "@/components/story/ExportBar";
 import { useStory } from "@/contexts/StoryContext";
+import { useSession } from "@/contexts/SessionContext";
 import { Disclaimer } from "@/components/story/Disclaimer";
 import { Alert } from "@/components/Alert";
 import { StoryGenerationRequest, StoryGenerationResponse } from "@/types/story";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function StoryPage() {
   const { story: storyData } = useStory();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const storyId = searchParams.get("id");
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+  const { data: session, isLoading, logOutWithReason } = useSession();
   const isFetchingRef = useRef(false); // Ref para rastrear se já está fazendo fetch
   const lastStoryKeyRef = useRef<string>(""); // Ref para rastrear a última história
   const abortControllerRef = useRef<AbortController | null>(null); // Ref para o AbortController atual
@@ -22,6 +27,15 @@ export default function StoryPage() {
   const [story, setStory] = useState("");
   const [loading, setLoading] = useState(true); // Iniciar como true para mostrar spinner imediatamente
   const [issues, setIssues] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [currentStoryId, setCurrentStoryId] = useState<string | null>(storyId);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrentStoryId(storyId);
+    if (storyId) setIsSaved(true);
+  }, [storyId]);
 
   const getAgeLabel = (val: number) => {
     if (val < 33) return "3-5 anos";
@@ -43,7 +57,110 @@ export default function StoryPage() {
     setLoading(false);
   };
 
+  const handleSaveStory = async () => {
+    if (!session?.user_id || !story || isSaving || isSaved) return;
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      if (currentStoryId) {
+        const res = await fetch(`${backendUrl}/stories/${currentStoryId}/save?user_id=${session.user_id}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.token}`,
+          },
+        });
+        if (res.status === 401) {
+          logOutWithReason("Sessão expirada. Faça login novamente.");
+          router.push("/login");
+          return;
+        }
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || `HTTP error! status: ${res.status}`);
+        }
+        setIsSaved(true);
+        return;
+      }
+
+      const res = await fetch(`${backendUrl}/stories/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+        body: JSON.stringify({
+          creator_id: session.user_id,
+          title: storyData.theme || "História",
+          contents: story,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.status === 401) {
+        logOutWithReason("Sessão expirada. Faça login novamente.");
+        router.push("/login");
+        return;
+      }
+      if (!res.ok) {
+        throw new Error(data.detail || "Erro ao salvar história.");
+      }
+
+      if (data.story_id) {
+        setCurrentStoryId(data.story_id);
+        setIsSaved(true);
+        router.replace(`/story?id=${data.story_id}`);
+      } else {
+        setIsSaved(true);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao salvar história.";
+      setSaveError(message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   useEffect(() => {
+    if (!isLoading && !session?.token) {
+      router.push("/login");
+      return;
+    }
+
+    if (storyId) {
+      const controller = new AbortController();
+      setLoading(true);
+      setIssues([]);
+      setIsSaved(true);
+
+      fetch(`${backendUrl}/stories/by-id/${storyId}?user_id=${session?.user_id ?? ""}`, {
+        method: "GET",
+        signal: controller.signal,
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.detail || `HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          setStory(data.contents || "");
+        })
+        .catch((err) => {
+          if (err instanceof Error && err.name === "AbortError") return;
+          setStory("");
+          setIssues([err.message || "Erro ao carregar a história."]);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+
+      return () => {
+        controller.abort();
+      };
+    }
     // Verificar se há sinal para cancelar requisição (vindo da página de criação ou botão)
     const shouldCancel = sessionStorage.getItem("cancel_story_request");
     if (shouldCancel === "true") {
@@ -137,10 +254,12 @@ export default function StoryPage() {
         educational_value: storyData.value,
         setting: storyData.setting,
         characters: storyData.characters,
+        title: storyData.theme,
+        creator_id: session?.user_id,
       };
 
       try {
-        const res = await fetch("http://localhost:8000/stories/generate", {
+        const res = await fetch(`${backendUrl}/stories/generate`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(storyRequest),
@@ -257,7 +376,7 @@ export default function StoryPage() {
         cancelCurrentRequest();
       }
     };
-  }, [storyData]);
+  }, [storyData, storyId, backendUrl, isLoading, session?.token, session?.user_id, router]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
@@ -272,10 +391,22 @@ export default function StoryPage() {
               value={storyData.value}
               characters={storyData.characters}
               setting={storyData.setting}
+              onSave={handleSaveStory}
+              canSave={Boolean(story && !loading)}
+              isSaving={isSaving}
+              isSaved={isSaved}
             />
           </div>
 
           <div className="lg:col-span-9">
+            {saveError && (
+              <Alert
+                type="error"
+                title="Falha ao salvar"
+                message={saveError}
+                dismissible={false}
+              />
+            )}
             {/* Exibir alerta de conteúdo impróprio se houver issues e não houver história */}
             {!loading && issues.length > 0 && !story && (
               <Alert
