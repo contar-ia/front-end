@@ -1,10 +1,37 @@
 "use client";
 
+/**
+ * Módulo de exportação de histórias para PDF e DOCX (lado do cliente).
+ *
+ * Este arquivo fornece utilitários para converter conteúdo em Markdown
+ * em documentos finais baixáveis pelo usuário, incluindo automaticamente
+ * um aviso legal (disclaimer) ao final.
+ *
+ * Executa apenas no client-side (browser), pois:
+ * - Manipula o DOM
+ * - Dispara downloads de arquivos
+ * - Usa bibliotecas que dependem do ambiente do navegador
+ */
 import { marked } from "marked";
 import { saveAs } from "file-saver";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 
+/**
+ * Título padrão do aviso legal inserido nos documentos exportados.
+ */
 export const DISCLAIMER_TITLE = "Aviso Importante";
+
+/**
+ * Texto padrão do aviso legal.
+ *
+ * Inclui informações sobre:
+ * - LGPD (proteção de dados)
+ * - Direitos autorais
+ * - Uso permitido do conteúdo gerado por IA
+ * - Responsabilidade do usuário
+ *
+ * Este texto é anexado automaticamente ao final dos documentos exportados.
+ */
 export const DISCLAIMER_TEXT = `
 LGPD – Proteção de Dados:
 Este sistema processa informações fornecidas pelo usuário exclusivamente para geração de conteúdo personalizado. Nenhuma informação pessoal é armazenada para fins comerciais, e todos os dados são tratados de acordo com os princípios da Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
@@ -18,11 +45,42 @@ Ao utilizar esta plataforma, você concorda em respeitar direitos autorais, evit
 Este aviso tem caráter informativo e não substitui orientação jurídica.
 `;
 
+/**
+ * Exporta uma história em Markdown como arquivo PDF.
+ *
+ * Fluxo:
+ * 1. Converte Markdown para HTML
+ * 2. Insere o conteúdo em um container estilizado
+ * 3. Adiciona o aviso legal ao final
+ * 4. Gera e baixa automaticamente o PDF
+ *
+ * @param markdown Conteúdo da história em formato Markdown
+ */
 export async function exportStoryAsPdf(markdown: string) {
+  /**
+   * Importação dinâmica da biblioteca html2pdf.
+   * Evita aumentar o bundle inicial da aplicação.
+   */
   const html2pdf = (await import("html2pdf.js")).default;
+
+  /**
+   * Converte Markdown para HTML.
+   */
   const html = marked(markdown);
 
+  /**
+   * Cria um container DOM para renderização do conteúdo.
+   * O HTML será processado pela biblioteca html2pdf.
+   */
   const container = document.createElement("div");
+
+  /**
+   * Estrutura do documento:
+   * - Conteúdo principal formatado
+   * - Linha separadora
+   * - Título do aviso legal
+   * - Texto do aviso legal
+   */
   container.innerHTML = `
     <div style="
       font-family: Helvetica, sans-serif;
@@ -45,6 +103,16 @@ export async function exportStoryAsPdf(markdown: string) {
     </div>
   `;
 
+  /**
+   * Configura e gera o PDF.
+   *
+   * Opções aplicadas:
+   * - Margem: 10 mm
+   * - Nome do arquivo: contar-ia.pdf
+   * - Escala de renderização: 2 (melhor qualidade)
+   * - Formato: A4
+   * - Orientação: Retrato (portrait)
+   */
   html2pdf()
     .from(container)
     .set({
@@ -56,10 +124,32 @@ export async function exportStoryAsPdf(markdown: string) {
     .save();
 }
 
+/**
+ * Exporta uma história em Markdown como arquivo DOCX (Microsoft Word).
+ *
+ * Fluxo:
+ * 1. Tokeniza o Markdown em elementos estruturados
+ * 2. Converte tokens em parágrafos DOCX
+ * 3. Adiciona o aviso legal ao final
+ * 4. Gera o arquivo .docx e inicia o download
+ *
+ * @param markdown Conteúdo da história em formato Markdown
+ */
 export async function exportStoryAsDocx(markdown: string) {
+  /**
+   * Converte o Markdown em tokens estruturados
+   * (títulos, parágrafos, etc.).
+   */
   const tokens = marked.lexer(markdown);
 
+  /**
+   * Converte cada token em um objeto Paragraph da biblioteca docx.
+   */
   const paragraphs: Paragraph[] = tokens.map((token: any) => {
+    /**
+     * Tratamento de títulos (headings).
+     * O nível do título é baseado na profundidade do Markdown (#, ##, ###).
+     */
     if (token.type === "heading") {
       return new Paragraph({
         text: token.text,
@@ -73,22 +163,37 @@ export async function exportStoryAsDocx(markdown: string) {
       });
     }
 
+    /**
+     * Tratamento de parágrafos comuns.
+     */
     if (token.type === "paragraph") {
       return new Paragraph({
         children: [
           new TextRun({
             text: token.text,
             font: "Arial",
-            size: 24,
+            size: 24, // Aproximadamente 12pt
           }),
         ],
         spacing: { after: 200 },
       });
     }
 
+    /**
+     * Para tokens não tratados, cria um parágrafo vazio
+     * para manter a estrutura do documento.
+     */
     return new Paragraph("");
   });
 
+  /**
+   * Cria os parágrafos do aviso legal.
+   *
+   * Estrutura:
+   * - Título do aviso como Heading 2
+   * - Texto dividido em blocos separados por linhas em branco
+   * - Texto em itálico para diferenciação visual
+   */
   const disclaimerParagraphs = [
     new Paragraph({
       text: DISCLAIMER_TITLE,
@@ -111,6 +216,10 @@ export async function exportStoryAsDocx(markdown: string) {
     ),
   ];
 
+  /**
+   * Cria o documento DOCX com uma única seção.
+   * O conteúdo inclui a história seguida do aviso legal.
+   */
   const doc = new Document({
     sections: [
       {
@@ -120,6 +229,13 @@ export async function exportStoryAsDocx(markdown: string) {
     ],
   });
 
+  /**
+   * Converte o documento para Blob binário.
+   */
   const blob = await Packer.toBlob(doc);
+
+  /**
+   * Inicia o download do arquivo usando file-saver.
+   */
   saveAs(blob, "contar-ia.docx");
 }
