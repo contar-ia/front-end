@@ -1,5 +1,24 @@
 "use client";
 
+/**
+ * Página de Login da aplicação.
+ *
+ * Responsabilidades desta página:
+ *
+ * • Autenticar o usuário via API backend
+ * • Gerenciar estado do formulário de login (email/usuário e senha)
+ * • Controlar requisição assíncrona com timeout
+ * • Persistir dados da sessão após autenticação bem-sucedida
+ * • Exibir mensagens de erro e feedback visual ao usuário
+ * • Exibir motivo de logout anterior (ex: sessão expirada)
+ * • Garantir que qualquer sessão anterior seja limpa ao acessar a página
+ * • Redirecionar para a área autenticada após login
+ *
+ * Integração principal:
+ * • Contexto global de sessão (SessionContext)
+ * • TanStack React Query para controle de mutação
+ * • Next.js Router para navegação programática
+ */
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { User, Lock, LogIn, Loader2 } from "lucide-react";
@@ -14,22 +33,70 @@ import {
 } from "@/contexts/SessionContext";
 
 export default function LoginPage() {
+  /**
+   * Hook de navegação do Next.js.
+   * Usado para redirecionamento após login.
+   */
   const router = useRouter();
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+
+  /**
+   * URL base do backend.
+   * Usa variável de ambiente ou fallback local.
+   */
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+
+  /**
+   * Tempo máximo de espera da requisição de login (ms).
+   * Caso ultrapasse, a requisição será abortada.
+   */
   const requestTimeoutMs = 10000;
+
+  /**
+   * Contexto global de sessão.
+   * replaceSessionData → salva nova sessão após login
+   * logOut → limpa qualquer sessão existente
+   */
   const { replaceSessionData, logOut } = useSession();
+
+  /**
+   * Motivo do logout anterior (se houver).
+   * Exemplo: sessão expirada, token inválido, etc.
+   */
   const [logoutReason, setLogoutReason] = useState<string | null>(null);
+
+  /**
+   * Ref usado para garantir que o reset da sessão
+   * aconteça apenas uma vez.
+   */
   const didResetSession = useRef(false);
 
+  /**
+   * Estado controlado do formulário de login.
+   */
   const [loginData, setLoginData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
+  /**
+   * Mutação responsável por executar o login.
+   *
+   * Fluxo:
+   * 1. Cria AbortController para timeout
+   * 2. Envia requisição POST para /auth/login/
+   * 3. Trata erros de rede e resposta inválida
+   * 4. Retorna dados do usuário autenticado
+   */
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async () => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
+
+      // Cancela requisição se exceder o tempo limite
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        requestTimeoutMs
+      );
 
       try {
         const response = await fetch(`${backendUrl}/auth/login/`, {
@@ -45,19 +112,31 @@ export default function LoginPage() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.detail || "Falha ao entrar. Verifique suas credenciais.");
+          throw new Error(
+            data.detail ||
+              "Falha ao entrar. Verifique suas credenciais."
+          );
         }
 
         return data;
       } catch (err) {
+        // Timeout ou cancelamento da requisição
         if (err instanceof DOMException && err.name === "AbortError") {
-          throw new Error("Servidor demorou para responder. Tente novamente.");
+          throw new Error(
+            "Servidor demorou para responder. Tente novamente."
+          );
         }
         throw err;
       } finally {
         clearTimeout(timeoutId);
       }
     },
+
+    /**
+     * Executado após login bem-sucedido.
+     * Salva os dados da sessão globalmente
+     * e redireciona para a área autenticada.
+     */
     onSuccess: (data) => {
       replaceSessionData({
         token: data.token,
@@ -72,17 +151,29 @@ export default function LoginPage() {
     },
   });
 
+  /**
+   * Handler de submissão do formulário.
+   * Impede recarregamento da página e executa a mutação.
+   */
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     mutate();
   };
 
+  /**
+   * Efeito responsável por limpar qualquer sessão anterior
+   * e exibir motivo do logout (se existir).
+   * Executa apenas uma vez graças ao useRef.
+   */
   useEffect(() => {
     if (didResetSession.current) return;
     didResetSession.current = true;
 
     getLogoutReason().then((reason) => {
+      // Garante que nenhuma sessão anterior permaneça ativa
       logOut();
+
+      // Exibe mensagem ao usuário, se houver
       if (reason) {
         setLogoutReason(reason);
         clearLogoutReason();
@@ -90,6 +181,16 @@ export default function LoginPage() {
     });
   }, [logOut]);
 
+  /**
+   * Renderização da interface da página.
+   *
+   * Estrutura:
+   * • Header
+   * • Card central com formulário de login
+   * • Mensagens de erro e logout
+   * • Link para cadastro
+   * • Footer
+   */
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 via-white to-pink-50 font-sans text-slate-800">
       <Header />
@@ -127,7 +228,7 @@ export default function LoginPage() {
                   <input
                     required
                     type="text"
-                    placeholder="Seu usuário"
+                    placeholder="Seu e-mail ou usuário"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all placeholder:text-slate-400 text-slate-700"
                     onChange={(e) => setLoginData((p) => ({ ...p, email: e.target.value }))}
                   />
