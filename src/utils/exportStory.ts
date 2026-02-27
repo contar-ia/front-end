@@ -81,25 +81,77 @@ export async function exportStoryAsPdf(markdown: string) {
    * - Título do aviso legal
    * - Texto do aviso legal
    */
+  const disclaimerParagraphs = DISCLAIMER_TEXT.trim()
+    .split("\n\n")
+    .map(
+      (p) => `
+        <p class="disclaimer-text">${p}</p>
+      `,
+    )
+    .join("");
+
   container.innerHTML = `
     <div style="
-      font-family: Helvetica, sans-serif;
+      font-family: Arial, sans-serif;
       color: #000;
-      font-size: 14px;
-      line-height: 1.6;
-      padding: 24px;
+      font-size: 12pt;
+      line-height: 1.5;
+      padding: 32px;
       max-width: 800px;
     ">
+
+      <style>
+        h1 {
+          font-size: 24pt;
+          font-weight: bold;
+          margin-bottom: 16pt;
+        }
+
+        h2 {
+          font-size: 18pt;
+          font-weight: bold;
+          margin-bottom: 14pt;
+        }
+
+        h3 {
+          font-size: 16pt;
+          font-weight: bold;
+          margin-bottom: 12pt;
+        }
+
+        p {
+          font-size: 12pt;
+          margin-bottom: 12pt;
+        }
+
+        hr {
+          margin: 32pt 0;
+        }
+
+        .disclaimer-title {
+          font-size: 18pt;
+          font-weight: bold;
+          margin-top: 24pt;
+          margin-bottom: 12pt;
+        }
+
+        .disclaimer-text {
+          font-size: 10pt;
+          font-style: italic;
+          margin-bottom: 10pt;
+        }
+      </style>
+
       ${html}
-      <hr style="margin: 32px 0;" />
 
-    <h3 style="font-size: 16px; font-weight: bold;">
-      ${DISCLAIMER_TITLE}
-    </h3>
+      <hr />
 
-    <p style="white-space: pre-line; font-size: 12px;">
-      ${DISCLAIMER_TEXT}
-    </p>
+      <div class="disclaimer-title">
+        ${DISCLAIMER_TITLE}
+      </div>
+
+      ${disclaimerParagraphs}
+
     </div>
   `;
 
@@ -116,7 +168,7 @@ export async function exportStoryAsPdf(markdown: string) {
   html2pdf()
     .from(container)
     .set({
-      margin: 10,
+      margin: 12,
       filename: "contar-ia.pdf",
       html2canvas: { scale: 2 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
@@ -148,23 +200,29 @@ export async function exportStoryAsDocx(markdown: string) {
   const paragraphs: Paragraph[] = tokens.map((token: any) => {
     /**
      * Tratamento de títulos (headings).
-     * O nível do título é baseado na profundidade do Markdown (#, ##, ###).
      */
     if (token.type === "heading") {
+      let size = 32;
+
+      if (token.depth === 1) size = 48;
+      else if (token.depth === 2) size = 36;
+      else if (token.depth === 3) size = 32;
+
       return new Paragraph({
-        text: token.text,
-        heading:
-          token.depth === 1
-            ? HeadingLevel.HEADING_1
-            : token.depth === 2
-            ? HeadingLevel.HEADING_2
-            : HeadingLevel.HEADING_3,
-        spacing: { after: 300 },
+        children: [
+          new TextRun({
+            text: token.text,
+            font: "Arial",
+            size,
+            bold: true,
+          }),
+        ],
+        spacing: { after: 240 },
       });
     }
 
     /**
-     * Tratamento de parágrafos comuns.
+     * Tratamento de parágrafos.
      */
     if (token.type === "paragraph") {
       return new Paragraph({
@@ -172,70 +230,77 @@ export async function exportStoryAsDocx(markdown: string) {
           new TextRun({
             text: token.text,
             font: "Arial",
-            size: 24, // Aproximadamente 12pt
+            size: 24,
           }),
         ],
-        spacing: { after: 200 },
+        spacing: { after: 240 },
       });
     }
 
-    /**
-     * Para tokens não tratados, cria um parágrafo vazio
-     * para manter a estrutura do documento.
-     */
     return new Paragraph("");
   });
 
   /**
-   * Cria os parágrafos do aviso legal.
-   *
-   * Estrutura:
-   * - Título do aviso como Heading 2
-   * - Texto dividido em blocos separados por linhas em branco
-   * - Texto em itálico para diferenciação visual
+   * Linha separadora (simulação do <hr>)
+   */
+  const divider = new Paragraph({
+    border: {
+      bottom: {
+        color: "auto",
+        space: 1,
+        style: "single",
+        size: 6,
+      },
+    },
+    spacing: { before: 480, after: 480 },
+  });
+
+  /**
+   * Parágrafos do disclaimer.
    */
   const disclaimerParagraphs = [
     new Paragraph({
-      text: DISCLAIMER_TITLE,
-      heading: HeadingLevel.HEADING_2,
-      spacing: { before: 400, after: 200 },
+      children: [
+        new TextRun({
+          text: DISCLAIMER_TITLE,
+          font: "Arial",
+          size: 36,
+          bold: true,
+        }),
+      ],
+      spacing: { before: 360, after: 240 },
     }),
 
-    ...DISCLAIMER_TEXT.split("\n\n").map(
+    ...DISCLAIMER_TEXT.trim().split("\n\n").map(
       (text) =>
         new Paragraph({
           children: [
             new TextRun({
               text,
+              font: "Arial",
               size: 20,
               italics: true,
             }),
           ],
           spacing: { after: 200 },
-        })
+        }),
     ),
   ];
 
-  /**
-   * Cria o documento DOCX com uma única seção.
-   * O conteúdo inclui a história seguida do aviso legal.
-   */
   const doc = new Document({
     sections: [
       {
         properties: {},
-        children: [...paragraphs, ...disclaimerParagraphs],
+        children: [
+          ...paragraphs,
+          divider,
+          ...disclaimerParagraphs,
+        ],
       },
     ],
   });
 
-  /**
-   * Converte o documento para Blob binário.
-   */
   const blob = await Packer.toBlob(doc);
 
-  /**
-   * Inicia o download do arquivo usando file-saver.
-   */
   saveAs(blob, "contar-ia.docx");
 }
