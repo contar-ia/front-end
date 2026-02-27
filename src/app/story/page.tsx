@@ -21,7 +21,6 @@
  * • Evita requisições duplicadas com refs de controle
  */
 import React, { useEffect, useState, useRef } from "react";
-import { Navbar } from "@/components/Navbar";
 import { StorySidebar } from "@/components/story/StorySidebar";
 import { StoryContent } from "@/components/story/StoryContent";
 import { ExportBar } from "@/components/story/ExportBar";
@@ -31,6 +30,7 @@ import { Disclaimer } from "@/components/story/Disclaimer";
 import { Alert } from "@/components/Alert";
 import { StoryGenerationRequest, StoryGenerationResponse } from "@/types/story";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function StoryPage() {
 
@@ -487,9 +487,7 @@ export default function StoryPage() {
    */
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
-
-      {/* Barra de navegação superior */}
-      <Navbar />
+      <AppHeader />
 
       <main className="flex-grow w-full max-w-7xl mx-auto p-6 md:p-8">
 

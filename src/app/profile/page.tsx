@@ -15,7 +15,7 @@
  * Esta página depende fortemente do contexto de sessão (useSession)
  * para obter token, dados do usuário e atualizar o estado global.
  */
-import React, { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import {
