@@ -77,7 +77,6 @@ docker run -p 3000:3000 \
 * **TypeScript** — Tipagem estática para maior confiabilidade
 * **Google Gemini API** — Geração de texto e imagens com IA
 * **Figma** — Prototipação e design de interfaces
-
 ---
 
 ## 📚 Recursos Adicionais
