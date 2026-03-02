@@ -15,7 +15,7 @@
  * Esta página depende fortemente do contexto de sessão (useSession)
  * para obter token, dados do usuário e atualizar o estado global.
  */
-import React, { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import {
@@ -50,7 +50,7 @@ export default function ProfilePage() {
    * Usa variável de ambiente ou fallback para localhost.
    */
   const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+    process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://8522-2001-12f0-9c1-664-44d4-121b-454a-d470.ngrok-free.app";
 
   /**
    * Estado responsável por armazenar estatísticas do usuário.

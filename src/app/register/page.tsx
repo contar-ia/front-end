@@ -21,11 +21,11 @@
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { User, Lock, RotateCw, UserPlus, Loader2, Mail } from "lucide-react";
-import { Header } from "@/components/Header";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { clearLogoutReason } from "@/contexts/SessionContext";
+import { Navbar } from "@/components/Navbar";
 
 export default function RegisterPage() {
 
@@ -40,7 +40,7 @@ export default function RegisterPage() {
    * URL do backend (configurável por variável de ambiente).
    */
   const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+    process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://8522-2001-12f0-9c1-664-44d4-121b-454a-d470.ngrok-free.app";
 
   /**
    * Timeout máximo da requisição (ms).
@@ -165,10 +165,17 @@ export default function RegisterPage() {
    * ============================================================
    */
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 via-white to-pink-50 font-sans text-slate-800">
-
-      {/* Cabeçalho público da aplicação */}
-      <Header />
+    <div
+          className="
+                min-h-screen          /* Garante altura mínima igual à viewport */
+                flex flex-col         /* Layout vertical */
+                bg-gradient-to-b      /* Gradiente vertical de fundo */
+                from-white to-slate-50
+                font-sans             /* Fonte padrão sem serifa */
+              "
+        >
+          {/* ================= Barra de navegação superior ================= */}
+          <Navbar />
 
       <main className="flex-grow flex flex-col items-center justify-center p-4 w-full">
 

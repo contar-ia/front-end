@@ -243,7 +243,7 @@ export default function CreateStory() {
             <section>
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 Selecione a Faixa Etária
-                <span className="text-slate-400 text-sm font-normal">ⓘ</span>
+                <span className="text-slate-400 text-sm font-normal"></span>
               </h3>
 
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">

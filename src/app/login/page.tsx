@@ -22,7 +22,6 @@
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { User, Lock, LogIn, Loader2 } from "lucide-react";
-import { Header } from "@/components/Header";
 import { useState, FormEvent, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
@@ -31,6 +30,7 @@ import {
   getLogoutReason,
   clearLogoutReason,
 } from "@/contexts/SessionContext";
+import { Navbar } from "@/components/Navbar";
 
 export default function LoginPage() {
   /**
@@ -44,7 +44,8 @@ export default function LoginPage() {
    * Usa variável de ambiente ou fallback local.
    */
   const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+    process.env.NEXT_PUBLIC_BACKEND_URL ??
+    "https://8522-2001-12f0-9c1-664-44d4-121b-454a-d470.ngrok-free.app";
 
   /**
    * Tempo máximo de espera da requisição de login (ms).
@@ -93,10 +94,7 @@ export default function LoginPage() {
       const controller = new AbortController();
 
       // Cancela requisição se exceder o tempo limite
-      const timeoutId = setTimeout(
-        () => controller.abort(),
-        requestTimeoutMs
-      );
+      const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
 
       try {
         const response = await fetch(`${backendUrl}/auth/login/`, {
@@ -113,8 +111,7 @@ export default function LoginPage() {
 
         if (!response.ok) {
           throw new Error(
-            data.detail ||
-              "Falha ao entrar. Verifique suas credenciais."
+            data.detail || "Falha ao entrar. Verifique suas credenciais.",
           );
         }
 
@@ -122,9 +119,7 @@ export default function LoginPage() {
       } catch (err) {
         // Timeout ou cancelamento da requisição
         if (err instanceof DOMException && err.name === "AbortError") {
-          throw new Error(
-            "Servidor demorou para responder. Tente novamente."
-          );
+          throw new Error("Servidor demorou para responder. Tente novamente.");
         }
         throw err;
       } finally {
@@ -192,8 +187,17 @@ export default function LoginPage() {
    * • Footer
    */
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 via-white to-pink-50 font-sans text-slate-800">
-      <Header />
+    <div
+      className="
+            min-h-screen          /* Garante altura mínima igual à viewport */
+            flex flex-col         /* Layout vertical */
+            bg-gradient-to-b      /* Gradiente vertical de fundo */
+            from-white to-slate-50
+            font-sans             /* Fonte padrão sem serifa */
+          "
+    >
+      {/* ================= Barra de navegação superior ================= */}
+      <Navbar />
 
       <main className="flex-grow flex flex-col items-center justify-center p-4 w-full">
         <div className="w-full max-w-md">
@@ -210,7 +214,7 @@ export default function LoginPage() {
                 {logoutReason}
               </div>
             )}
-            
+
             {/* Alerta de Erro */}
             {isError && (
               <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm font-medium rounded-r-lg animate-in fade-in zoom-in">
@@ -220,7 +224,9 @@ export default function LoginPage() {
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">E-mail ou Usuário</label>
+                <label className="text-sm font-bold text-slate-700 ml-1">
+                  E-mail ou Usuário
+                </label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
                     <User size={20} />
@@ -230,13 +236,17 @@ export default function LoginPage() {
                     type="text"
                     placeholder="Seu e-mail ou usuário"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all placeholder:text-slate-400 text-slate-700"
-                    onChange={(e) => setLoginData((p) => ({ ...p, email: e.target.value }))}
+                    onChange={(e) =>
+                      setLoginData((p) => ({ ...p, email: e.target.value }))
+                    }
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">Senha</label>
+                <label className="text-sm font-bold text-slate-700 ml-1">
+                  Senha
+                </label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
                     <Lock size={20} />
@@ -244,9 +254,11 @@ export default function LoginPage() {
                   <input
                     required
                     type="password"
-                     placeholder="••••••••"
+                    placeholder="••••••••"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all placeholder:text-slate-400 text-slate-700"
-                    onChange={(e) => setLoginData((p) => ({ ...p, password: e.target.value }))}
+                    onChange={(e) =>
+                      setLoginData((p) => ({ ...p, password: e.target.value }))
+                    }
                   />
                 </div>
               </div>
@@ -269,7 +281,10 @@ export default function LoginPage() {
 
             <div className="mt-8 text-center text-sm font-medium text-slate-500">
               Não tem uma conta?{" "}
-              <Link href="/register" className="text-teal-600 hover:text-teal-700 font-bold hover:underline">
+              <Link
+                href="/register"
+                className="text-teal-600 hover:text-teal-700 font-bold hover:underline"
+              >
                 Fazer cadastro
               </Link>
             </div>

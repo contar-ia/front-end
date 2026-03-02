@@ -88,7 +88,6 @@ export function StoryDetails({
         <label className="block text-lg font-bold mb-2">
           Quais são as personagens principais?{" "}
           <span className="text-slate-400 font-normal text-sm">
-            ⓘ
           </span>
         </label>
 
@@ -156,7 +155,6 @@ export function StoryDetails({
         <label className="block text-lg font-bold mb-2">
           Onde se passa a história?{" "}
           <span className="text-slate-400 font-normal text-sm">
-            ⓘ
           </span>
         </label>
 
