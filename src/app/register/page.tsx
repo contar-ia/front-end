@@ -171,6 +171,7 @@ export default function RegisterPage() {
                 flex flex-col         /* Layout vertical */
                 bg-gradient-to-b      /* Gradiente vertical de fundo */
                 from-white to-slate-50
+                text-black
                 font-sans             /* Fonte padrão sem serifa */
               "
         >
