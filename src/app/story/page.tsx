@@ -20,7 +20,7 @@
  * • Implementa timeout de segurança para geração de histórias
  * • Evita requisições duplicadas com refs de controle
  */
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { StorySidebar } from "@/components/story/StorySidebar";
 import { StoryContent } from "@/components/story/StoryContent";
 import { ExportBar } from "@/components/story/ExportBar";
@@ -33,6 +33,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 
 export default function StoryPage() {
+    return <Suspense><StoryPageContent /></Suspense>
+}
+
+function StoryPageContent() {
 
   /**
    * ============================================================
