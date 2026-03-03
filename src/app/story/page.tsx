@@ -498,19 +498,21 @@ function StoryPageContent() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           {/* Sidebar com resumo e botão salvar */}
-          <div className="lg:col-span-3 lg:sticky lg:top-24">
-            <StorySidebar
-              theme={storyData.theme}
-              ageGroup={storyData.ageGroup}
-              value={storyData.value}
-              characters={storyData.characters}
-              setting={storyData.setting}
-              onSave={handleSaveStory}
-              canSave={Boolean(story && !loading)}
-              isSaving={isSaving}
-              isSaved={isSaved}
-            />
-          </div>
+          {!storyId && (
+            <div className="lg:col-span-3 lg:sticky lg:top-24">
+              <StorySidebar
+                theme={storyData.theme}
+                ageGroup={storyData.ageGroup}
+                value={storyData.value}
+                characters={storyData.characters}
+                setting={storyData.setting}
+                onSave={handleSaveStory}
+                canSave={Boolean(story && !loading)}
+                isSaving={isSaving}
+                isSaved={isSaved}
+              />
+            </div>
+          )}
 
           {/* Área principal da história */}
           <div className="lg:col-span-9">
