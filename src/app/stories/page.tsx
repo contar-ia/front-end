@@ -328,7 +328,7 @@ export default function StoriesPage() {
                       <button
                         className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Editar"
-                        onClick={() => window.alert("to be implemented")}
+                        onClick={() => router.push(`/edit?id=${story.id}`)}
                       >
                         <Edit3 size={18} />
                       </button>
