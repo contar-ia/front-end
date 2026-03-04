@@ -47,7 +47,7 @@ function StoryPageContent() {
   const router = useRouter(); // Navegação programática
   const searchParams = useSearchParams(); // Acesso aos parâmetros da URL
   const storyId = searchParams.get("id"); // ID da história (se existente)
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://8522-2001-12f0-9c1-664-44d4-121b-454a-d470.ngrok-free.app";
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://8522-2001-12f0-9c1-664-44d4-121b-454a-d470.ngrok-free.app/api";
 
   const { data: session, isLoading, logOutWithReason } = useSession();
 

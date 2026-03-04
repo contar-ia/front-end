@@ -31,7 +31,7 @@ export default function EditStoryPage() {
 
   const backendUrl =
     process.env.NEXT_PUBLIC_BACKEND_URL ??
-    "https://8522-2001-12f0-9c1-664-44d4-121b-454a-d470.ngrok-free.app";
+    "https://8522-2001-12f0-9c1-664-44d4-121b-454a-d470.ngrok-free.app/api";
 
   /**
    * ============================================================
