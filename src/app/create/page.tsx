@@ -151,11 +151,8 @@ export default function CreateStory() {
     // Salva prompt para uso posterior na página de história
     sessionStorage.setItem("pending_prompt", prompt);
 
-    /**
-     * Sinaliza cancelamento de requisições anteriores,
-     * evitando conflitos entre múltiplas gerações.
-     */
-    sessionStorage.setItem("cancel_story_request", "true");
+    // Garante que não haja flags residuais de cancelamento
+    sessionStorage.removeItem("cancel_story_request");
 
     /**
      * Salva dados estruturados no contexto global
